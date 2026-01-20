@@ -11,8 +11,9 @@ import (
 
 func main() {
 	// Initial memory for storing
-	memoryStore := store.NewMemoryTaskStore()
-	taskServices := service.NewTaskService(memoryStore)
+	// memoryStore := store.NewMemoryTaskStore()
+	fileStore := store.NewFileTaskStore("tasks.json")
+	taskServices := service.NewTaskService(fileStore)
 
 	handler.SetTaskService(taskServices)
 	http.HandleFunc("/tasks", handler.Tasks)
