@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,20 +18,21 @@ func NewTaskService(store store.TaskStore) *TaskService {
 		store: store,
 	}
 }
-func (s *TaskService) CreateTask(title string, description string) (models.Task, error) {
+func (s *TaskService) CreateTask(title string, description sql.NullString, userID string) (models.Task, error) {
 	task := models.Task{
 		ID:          uuid.NewString(),
 		Title:       title,
 		Description: description,
 		Completed:   false,
 		CreatedAt:   time.Now(),
+		UserID:      userID,
 	}
 	err := s.store.Create(task)
 	return task, err
 }
 
-func (s *TaskService) GetAllTasks() ([]models.Task, error) {
-	return s.store.GetAll()
+func (s *TaskService) GetAllTasks(userID string) ([]models.Task, error) {
+	return s.store.GetAll(userID)
 }
 func (s *TaskService) GetTaskById(id string) (models.Task, error) {
 	return s.store.GetById(id)

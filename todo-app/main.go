@@ -7,6 +7,7 @@ import (
 
 	"github.com/rahulp18/todo/db"
 	"github.com/rahulp18/todo/handler"
+	"github.com/rahulp18/todo/middleware"
 	"github.com/rahulp18/todo/service"
 	"github.com/rahulp18/todo/store"
 )
@@ -28,8 +29,11 @@ func main() {
 	authService := service.NewAuthService(userStore)
 	handler.SetAuthService(authService)
 
-	http.HandleFunc("/tasks", handler.Tasks)
-	http.HandleFunc("/tasks/", handler.TaskById)
+	protectedTasks := middleware.AuthMiddleware(http.HandlerFunc(handler.Tasks))
+	protectedTaskByID := middleware.AuthMiddleware(http.HandlerFunc(handler.TaskById))
+
+	http.Handle("/tasks", protectedTasks)
+	http.Handle("/tasks/", protectedTaskByID)
 
 	http.HandleFunc("/register", handler.Register)
 	http.HandleFunc("/login", handler.Login)

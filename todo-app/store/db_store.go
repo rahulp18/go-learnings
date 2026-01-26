@@ -17,19 +17,24 @@ func NewPgTaskStore(db *sqlx.DB) *PostgresStore {
 	}
 }
 func (s *PostgresStore) Create(task models.Task) error {
-	query := `INSERT INTO tasks(id,title,completed) VALUES ($1,$2,$3)`
+	query := `INSERT INTO tasks(id,title,description,completed,user_id) VALUES ($1,$2,$3,$4,$5)`
 	_, err := s.dbCon.Exec(
 		query,
 		task.ID,
 		task.Title,
+		task.Description,
 		task.Completed,
+		task.UserID,
 	)
 	return err
 }
 
-func (s *PostgresStore) GetAll() ([]models.Task, error) {
+func (s *PostgresStore) GetAll(userID string) ([]models.Task, error) {
+
 	var tasks []models.Task
-	query := `SELECT * FROM tasks ORDER BY created_at DESC`
+	query := `SELECT *
+	FROM tasks
+	ORDER BY created_at DESC`
 	err := s.dbCon.Select(&tasks, query)
 	if err != nil {
 		return nil, err

@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/rahulp18/todo/middleware"
 	"github.com/rahulp18/todo/service"
 )
 
@@ -33,6 +35,8 @@ func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 func Tasks(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(string)
+
 	switch r.Method {
 	case http.MethodPost:
 		var req CreateRequest
@@ -44,7 +48,7 @@ func Tasks(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Title && Description is required", http.StatusBadRequest)
 			return
 		}
-		task, err := taskService.CreateTask(req.Title, req.Description)
+		task, err := taskService.CreateTask(req.Title, sql.NullString{String: req.Description, Valid: true}, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -52,7 +56,7 @@ func Tasks(w http.ResponseWriter, r *http.Request) {
 
 		writeJSON(w, http.StatusCreated, task)
 	case http.MethodGet:
-		tasks, err := taskService.GetAllTasks()
+		tasks, err := taskService.GetAllTasks(userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
